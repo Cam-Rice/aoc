@@ -32,7 +32,7 @@ def elves (s : String) : List String := s.splitOn "\x0d\n\x0d\n"
 #eval elves test
 
 def calories (s : String) : List Nat := 
-  let l' := (s.splitOn "\x0d\n").dropLast
+  let l' := (s.splitOn "\x0d\n")
   l'.map (fun s => s.toNat!) 
 
 #eval (elves test).map calories
@@ -52,9 +52,9 @@ def totalCalList (s : String) : List Nat :=
 #eval totalCalList test
 
 def answer (s : String) : Nat :=
-  totalCalList s|>.foldl max 0
+  (totalCalList s).foldl max 3
 
-#eval answer test 
+#eval answer test
 
 #check IO.FS.readFile
 
@@ -65,9 +65,20 @@ def path := System.FilePath.mk "C:\\Users\\camri\\aoc\\input"
 def contents : IO Unit := do
   let file ← IO.FS.readFile path
   IO.println file.data.getLast! 
-  IO.println (answer file) 
+  IO.println (answer file)
   return ()
 
 #check Array.insertionSort 
 
 #eval contents
+
+def answer2 (s : String) : Nat :=
+  totalCalList s|>.foldl max (3)
+
+def contents2 : IO Unit := do
+  let file ← IO.FS.readFile path
+  IO.println file.data.getLast!
+  IO.println (answer2 file)
+  return ()
+
+#eval contents2
