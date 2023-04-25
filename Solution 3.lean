@@ -247,6 +247,7 @@ def myHead { α : Type} [Inhabited α] (l : List α) : α :=
   | [] => default 
   | a::_ => a 
 
+/-
 namespace Notes
 
 variable {α : Type} (f : α → α → Bool) (r : α → α → Prop) 
@@ -357,7 +358,7 @@ theorem sorted_of_insertSort (l : List α) [Asymmetric f] :
 #eval Sorted [1,2,3]
 
 end Notes
-
+-/
 
 
 /-def thirdline (s : String) : String × String :=
@@ -379,7 +380,9 @@ def joinListNat (l1 : List Nat) (l2 : List Nat) (l3 : List Nat) : List Nat :=
 def joinListChar (l1 : List Char) (l2 : List Char) (l3 : List Char) : List Char :=
   l1 ++ l2 ++ l3
 
-#eval joinList1 [1,2,3] [2,3] [6,7]
+#eval joinListNat [1,2,3] [2,3] [6,7]
+
+-- def joinListListNat (l : List Nat) : List (List Nat)
 --#eval joinList ["vJrwpWtwJgWrhcsFMMfFFhFp", "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL", "PmmdzqPrVvPwwTWBwg", "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn",
 --"ttgJtRGJQctTZtZT", "CrZsJsPPZsGzwwsLwLmpwMDw"]
 
@@ -387,11 +390,13 @@ def joinListStrings (list1 : List String) (list2 : List String) (list3 : List St
   list1 ++ (list2 ++ list3)
 
 --#eval joinList (cut test)
-#eval joinListStrings (cut test)
+--#eval joinListStrings (cut test)
+
 
 
 #eval cut test
-#eval findcommonelements ((cut test).map fun s => s.data)
+--#eval findcommonelements ((cut test).map fun s => s.data)
 
-def thirds (s : String) : String =
-  let first := s.data.take (s.length / 3)
+--def thirds (s : String) : String =
+  --let first := s.data.take (s.length / 2) 
+  --let second := s.data.drop (s.length / 2)
