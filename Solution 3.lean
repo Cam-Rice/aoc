@@ -389,9 +389,68 @@ def joinListChar (l1 : List Char) (l2 : List Char) (l3 : List Char) : List Char 
 def joinListStrings (list1 : List String) (list2 : List String) (list3 : List String) : List String :=
   list1 ++ (list2 ++ list3)
 
+def divide (l : List a) : List (List a) :=
+match l with
+| [] => []
+| a::as =>
+match divide as with
+| [] => [[a]]
+| l::ls => if l.length = 3 then [a]::(l::ls) else (a::l)::ls
+
+
+
+--def StringtoListString (s : String) : List String
+#eval List.bagInter (List.bagInter "abc".data "cde".data) "cgh".data
+#eval divide (cut test).map
+#eval (divide ((cut test).map fun s => s.data))
+#eval (divide (cut test)).map (fun s => s.toString)
+#eval ((divide (cut test)).map fun s => s.toString).map fun s=> s.data
+#eval ((cut test).map fun s => s.data).map divide
+#eval (((cut test).map fun s => s.data).map divide).map List.bagInter 
+
+def commas (s : String ) (ls : List String): String := 
+String.intercalate s ls
+#eval commas (divide (cut test))
+
+def repeateditem1 (s : String) : List String :=
+  let t := (divide ((cut test).map fun s => s))
+  let j := t.map (fun s => List.bagInter s)
+  j.map fun l => l[0]!
+
+def repeateditem12 (s : String) : List String :=
+  let t := (divide ((cut s).map fun s => s.data))
+  let j := t.map (fun s => List.bagInter s)
+  j.map fun l => l[0]!.toString
+
+def repeateditem2 (s : String) : List String :=
+  let t := divide (cut s)
+  let j := t.map fun s => s.toString
+  let k := t.map (fun s => List.bagInter s)
+  k.map fun l => l[0]!.toString 
+
+def repeateditem3 (s : String) : List String :=
+  let t := (cut s) 
+  let l' := t.map divide 
+  let k := l'.map List.bagInter 
+  
+
+
+
+
 --#eval joinList (cut test)
 --#eval joinListStrings (cut test)
 
+def List.intersect {α : Type} [DecidableEq α] : List α → List α → List α
+| [], _ => []
+| _, [] => []
+| (x :: xs), ys => if List.elem x ys then x :: List.intersect xs ys else List.intersect xs ys
+
+
+def find_common_elements (s1 : String) (s2 : String) (s3 : String) : List Char :=
+  let lst1 := s1.toList
+  let lst2 := s2.toList
+  let lst3 := s3.toList
+  List.intersect (List.intersect lst1 lst2) lst3
 
 
 #eval cut test
