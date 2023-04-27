@@ -1,3 +1,5 @@
+import Std.Data.List.Basic
+
 def test : String :=
 "    [D]    
 [N] [C]    

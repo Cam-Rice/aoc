@@ -401,42 +401,59 @@ match divide as with
 
 --def StringtoListString (s : String) : List String
 #eval List.bagInter (List.bagInter "abc".data "cde".data) "cgh".data
-#eval divide (cut test).map
+#eval divide (cut test)
 #eval (divide ((cut test).map fun s => s.data))
 #eval (divide (cut test)).map (fun s => s.toString)
 #eval ((divide (cut test)).map fun s => s.toString).map fun s=> s.data
 #eval ((cut test).map fun s => s.data).map divide
-#eval (((cut test).map fun s => s.data).map divide).map List.bagInter 
+--#eval (((cut test).map fun s => s.data).map divide).map List.bagInter 
 
-def commas (s : String ) (ls : List String): String := 
-String.intercalate s ls
-#eval commas (divide (cut test))
+def comma : String := ", "
+def commas (ls : List String): String :=
+String.intercalate comma ls
+#eval divide ((commas (cut test)).toList)
 
-def repeateditem1 (s : String) : List String :=
-  let t := (divide ((cut test).map fun s => s))
-  let j := t.map (fun s => List.bagInter s)
-  j.map fun l => l[0]!
+def linebreak : String := "\x0d\n"
 
-def repeateditem12 (s : String) : List String :=
-  let t := (divide ((cut s).map fun s => s.data))
-  let j := t.map (fun s => List.bagInter s)
-  j.map fun l => l[0]!.toString
+def breakLines (s : String) : List String :=
+s.splitOn linebreak
 
-def repeateditem2 (s : String) : List String :=
-  let t := divide (cut s)
-  let j := t.map fun s => s.toString
-  let k := t.map (fun s => List.bagInter s)
-  k.map fun l => l[0]!.toString 
+def groupByThrees {α : Type} (l : List α) : List (List α) :=
+  match l with
+  | [] => []
+  | s::ss =>
+  match groupByThrees ss with
+  | [] => [[s]]
+  | l::ls => if l.length = 3 then [s]::(l::ls) else (s::l)::ls
 
-def repeateditem3 (s : String) : List String :=
-  let t := (cut s) 
-  let l' := t.map divide 
-  let k := l'.map List.bagInter 
+def inter (l : List String) : String :=
+  match l with
+  | [] => ""
+  | [s] => s
+  | s::ss => ⟨s.data.bagInter (inter ss).data⟩
+
+def commonLetters (s : String) : List String :=
+  groupByThrees (breakLines s)|>.map inter
+
+#eval commonLetters test
+
+def itemtovalue2 (s : String) : List Nat :=
+  let t := commonLetters s
+  t.map (fun s => value (inputs s))
+
+#eval addUp (itemtovalue2 test)
+
+def total2 (s : String) : Nat :=
+  let t := itemtovalue2 s
+  addUp t
+
+def contents2 : IO Unit := do
+  let file ← IO.FS.readFile path
+-- IO.println file.data.getLast! 
+  IO.println (total2 file)
+  return () 
   
-
-
-
-
+#eval contents2
 --#eval joinList (cut test)
 --#eval joinListStrings (cut test)
 
@@ -453,7 +470,8 @@ def find_common_elements (s1 : String) (s2 : String) (s3 : String) : List Char :
   List.intersect (List.intersect lst1 lst2) lst3
 
 
-#eval cut test
+
+
 --#eval findcommonelements ((cut test).map fun s => s.data)
 
 --def thirds (s : String) : String =

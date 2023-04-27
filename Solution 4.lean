@@ -1,3 +1,5 @@
+import Std.Data.List.Basic
+
 def test : String :=
 ".234.....  2-4
 .....678.  6-8
@@ -20,21 +22,7 @@ def test : String :=
 
 #eval test
 
-def cut (s : String) : List String := s.splitOn "\x0d\n"
-
-def pair (s : String) : List Nat := 
-  let l' := (s.splitOn "\x0d\n")
-  l'.map (fun s => s.toNat!)
-
-#eval cut test
-#eval (cut test).map pair
-
--- need to make a list of all the numbers between two inputs.
--- attach each Nat.succ until last number
--- where start of first list is or is greater than start or 2nd lists, record that.
--- same for end of the list, but for the end. Must be both
-
-inductive number where
+inductive item where
   | one
   | two
   | three
@@ -47,7 +35,7 @@ inductive number where
   | Null 
 deriving Repr
 
-def inputs : String → number := by
+def inputs : String → item := by
   intro a
   match a with
   | "1" => exact .one
@@ -61,8 +49,8 @@ def inputs : String → number := by
   | "9" => exact .nine
   | _ => exact .Null
 
-def value (n : number) : Nat :=
-  match n with
+def value (i : item) : Nat :=
+  match i with
   | .one => 1
   | .two => 2
   | .three => 3
@@ -74,31 +62,102 @@ def value (n : number) : Nat :=
   | .nine => 9
   | .Null => 0
 
+def cut (s : String) : List String := s.splitOn "\x0d\n"
+def cuttwice (s : String) : List String := s.splitOn "\x0d\n\x0d\n"
+def dash (s : String) : List String := s.splitOn "."
 def divide (l : List a) : List (List a) :=
 match l with
 | [] => []
 | a::as =>
 match divide as with
 | [] => [[a]]
-| l::ls => if l.length = 2 then [a]::(l::ls) else (a::l)::ls
+| l::ls => if l.length = 1 then [a]::(l::ls) else (a::l)::ls
 
+def calories (s : String) : List Nat := 
+  let l' := (s.splitOn "\x0d\n")
+  l'.map (fun s => s.toNat!) 
+
+#eval dash (test)
+#eval cut test
+#eval (cuttwice test)
+#eval (cuttwice test).map calories
 #eval divide (cut test)
 
---(List.tails l2).filter (fun l => l1.isPrefix l)
 
-def List.contSublist {α : Type} [BEq α] (l₁ l₂ : List α) : Bool :=                                              
-let b := l₂.tails.filter (fun l => l₁.isPrefixOf l)|>.isEmpty
-!b
+-- need to make a list of all the numbers between two inputs.
+-- attach each Nat.succ until last number
+-- where start of first list is or is greater than start or 2nd lists, record that.
+-- same for end of the list, but for the end. Must be both
+
+
+
+
+
+def repeateditem (s : String) : List String :=
+  let k := cuttwice s 
+  let t := k.map twos
+  let l' := t.map halves 
+  let k := l'.map (fun (p,q) => List.bagInter p.data q.data)
+  k.map fun l => l[0]!.toString
+
+#eval repeateditem test
+
+def List.contSublist {α : Type} [BEq α] (l₁ l₂ : List α) : Bool :=
+  let b := l₂.tails.filter (fun l => l₁.isPrefixOf l)|>.isEmpty
+  !b
 
 def List.eitherContSublist {α : Type} [BEq α] (l₁ l₂ : List α) : Bool :=
-l₁.contSublist l₂ || l₂.contSublist l₁
+  l₁.contSublist l₂ || l₂.contSublist l₁
 
-example {α : Type} (a : α) (l: List α) : (a::l).length = 1 + l.length := by 
-  match l with 
-  | [] => simp  
-  | a'::as => 
-    simp only [List.length]
-    ac_rfl
+#eval List.contSublist [12] [01234] 
+#eval List.eitherContSublist [1,2] [0,1,2,3,4] 
+#eval List.eitherContSublist [.234.....  2-4] [.....678.  6-8]
+#eval List.contSublist (cut test)
+#eval List.eitherContSublist [.234.....  2-4] [.....678.  6-8]
+#eval List.contSublist (divide (cut test))
+#eval List.eitherContSublist (divide (cuttwice test))
+
+def countTrue (l : List Bool) : Nat :=
+  l.filter id |>.length
+
+#eval (List.eitherContSublist [1,2] [0,1,2,3,4]).toLBool
+
+def countTrues (s : String) : List Bool :=
+  let t := cut s 
+  t.map.toBool
+
+
+
+def itemtovalue2 (s : String) : List Nat :=
+  let t := commonLetters s
+  t.map (fun s => value (inputs s))
+
+#eval addUp (itemtovalue2 test)
+
+def total2 (s : String) : Nat :=
+  let t := itemtovalue2 s
+  addUp t
+
+def contents2 : IO Unit := do
+  let file ← IO.FS.readFile path
+-- IO.println file.data.getLast! 
+  IO.println (total2 file)
+  return () 
+
+
+
+--stuff that doesn't work
+
+def twos (s : String) : String :=
+  let parts := s.splitOn "\x0d\n"
+  String.join [parts.get! 0, parts.get! 1]
+
+def halves (s : String) : String × String :=
+  let first := s.data.take (s.length / 2) 
+  let second := s.data.drop (s.length / 2)
+  (⟨first⟩, ⟨second⟩)
+
+#eval ((cuttwice test).map twos).map halves
 
 
 
