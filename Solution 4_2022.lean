@@ -1,23 +1,12 @@
 import Std.Data.List.Basic
 
 def test : String :=
-".234.....  2-4
-.....678.  6-8
-
-.23......  2-3
-...45....  4-5
-
-....567..  5-7
-......789  7-9
-
-.2345678.  2-8
-..34567..  3-7
-
-.....6...  6-6
-...456...  4-6
-
-.23456...  2-6
-...45678.  4-8"
+"2-4,6-8
+2-3,4-5
+5-7,7-9
+2-8,3-7
+6-6,4-6
+2-6,4-8"
 -- only need to know values between spaces 11 and 15 (11,14]
 
 #eval test
@@ -64,7 +53,7 @@ def value (i : item) : Nat :=
 
 def cut (s : String) : List String := s.splitOn "\x0d\n"
 def cuttwice (s : String) : List String := s.splitOn "\x0d\n\x0d\n"
-def dash (s : String) : List String := s.splitOn "."
+def dash (s : String) : List String := s.splitOn "-"
 def divide (l : List a) : List (List a) :=
 match l with
 | [] => []
@@ -77,7 +66,25 @@ def calories (s : String) : List Nat :=
   let l' := (s.splitOn "\x0d\n")
   l'.map (fun s => s.toNat!) 
 
-#eval dash (test)
+def comma (s : String) : String × String := 
+  let l' := (s.splitOn ",")
+  l'.map (fun s => s.toNat!) 
+
+def twos (s : String) : String :=
+  let parts := s.splitOn "\x0d\n"
+  String.join [parts.get! 0, parts.get! 1]
+
+def halves (s : String) : String × String :=
+  let first := s.data.take (s.length / 2) 
+  let second := s.data.drop (s.length / 2)
+  (⟨first⟩, ⟨second⟩)
+
+#eval ((cuttwice test).map twos).map halves
+
+#eval test
+#eval (dash test)
+#eval dash "1-2, 3-4"
+#eval (dash test).map calories
 #eval cut test
 #eval (cuttwice test)
 #eval (cuttwice test).map calories
@@ -109,24 +116,44 @@ def List.contSublist {α : Type} [BEq α] (l₁ l₂ : List α) : Bool :=
 def List.eitherContSublist {α : Type} [BEq α] (l₁ l₂ : List α) : Bool :=
   l₁.contSublist l₂ || l₂.contSublist l₁
 
-#eval List.contSublist [12] [01234] 
+#eval List.contSublist [1,2] [0,1,2,3,4] 
 #eval List.eitherContSublist [1,2] [0,1,2,3,4] 
-#eval List.eitherContSublist [.234.....  2-4] [.....678.  6-8]
-#eval List.contSublist (cut test)
-#eval List.eitherContSublist [.234.....  2-4] [.....678.  6-8]
-#eval List.contSublist (divide (cut test))
-#eval List.eitherContSublist (divide (cuttwice test))
+
+
+structure Interval where
+  startpt : Nat
+  endpt : Nat
+deriving Inhabited, Repr
+
+def parse (s : String) : Interval :=
+  let l := s.splitOn "-"
+  ⟨l[0]!.toNat!,l[1]!.toNat!⟩
+
+
+def Interval.contain (i₁ i₂ : Interval) : Bool :=
+  i₁.startpt ≥ i₂.startpt && i₁.endpt ≤ i₂.endpt
+
+def Interval.disjoint (i₁ i₂ : Interval) : Bool :=
+  i₁.startpt > i₂.endpt || i₁.endpt < i₂.startpt
+
+def containedIntervals (s : List String) : List Bool :=
+  let intervals := s.map parse
+  intervals.map (fun i₁ => intervals.any (fun i₂ => i₁ ≠ i₂ && i₁.contain i₂))
+
+def Int (i₁ i₂ : Interval) : Bool
+
+#eval test
+#eval parse test
+#eval parseNat "2-4"
+#eval Interval.contain (parse test)
+#eval (parse test).map Interval.contain
+#eval Interval.disjoint (parse test)
+
 
 def countTrue (l : List Bool) : Nat :=
   l.filter id |>.length
 
 #eval (List.eitherContSublist [1,2] [0,1,2,3,4]).toLBool
-
-def countTrues (s : String) : List Bool :=
-  let t := cut s 
-  t.map.toBool
-
-
 
 def itemtovalue2 (s : String) : List Nat :=
   let t := commonLetters s
@@ -148,16 +175,6 @@ def contents2 : IO Unit := do
 
 --stuff that doesn't work
 
-def twos (s : String) : String :=
-  let parts := s.splitOn "\x0d\n"
-  String.join [parts.get! 0, parts.get! 1]
-
-def halves (s : String) : String × String :=
-  let first := s.data.take (s.length / 2) 
-  let second := s.data.drop (s.length / 2)
-  (⟨first⟩, ⟨second⟩)
-
-#eval ((cuttwice test).map twos).map halves
 
 
 
